@@ -77,7 +77,7 @@ export default function ShareInfoModal({
       phone: cleanPhone,
       businessPhone: cleanBusinessPhone,
     };
-    console.log("Cleaned Form Data to Submit:", cleanPhone);
+    console.log("Cleaned Form Data to Submit:", cleanedFormData);
 
     onSubmit(cleanedFormData);
   };

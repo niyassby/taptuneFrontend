@@ -61,50 +61,62 @@ function ProfileWrapper() {
     setFormData(initialFormData);
   }, []);
 
-  const handleConnectSubmit = () => {
-    if (!formData.fullName  || !formData.phone) {
-      toast.error("Please fill in your Full Name and Phone Number.");
-      return;
-    }
+const handleConnectSubmit = () => {
+  // 1. Basic Validation
+  if (!formData.fullName || !formData.phone) {
+    toast.error("Please fill in your Full Name and Phone Number.");
+    return;
+  }
 
-    if (!profile?.viewId) {
-      toast.error("Profile information is missing. Please refresh the page.");
-      return;
-    }
+  if (!profile?.viewId) {
+    toast.error("Profile information is missing. Please refresh the page.");
+    return;
+  }
 
+  // 2. Clean Phone Numbers
+  // Remove '+' and remove ALL spaces using regex
+  const cleanPhone = formData.phone
+    ? formData.phone.toString().replace(/\+/g, "").replace(/\s/g, "")
+    : "";
 
-    const payload = {
-      viewId: profile.viewId,
-      fullName: formData.fullName, // Correct: uses fullName
-      email: formData.email,
-      phoneNumber: formData.phone, // Correct: maps phone to phoneNumber
-      designation: formData.designation,
-      businessName: formData.businessName,
-      businessPhone: formData.businessPhone,
-      website: formData.website,
-      businessCategory: formData.businessCategory,
-      businessAddress: formData.businessAddress,
-      notes: formData.notes,
-    };
+  const cleanBusinessPhone = formData.businessPhone
+    ? formData.businessPhone.toString().replace(/\+/g, "").replace(/\s/g, "")
+    : "";
 
+  console.log("Cleaned phone number:", cleanPhone);
 
-    connectMutate(payload, {
-      onSuccess: (res) => {
-        if (res?.success) {
-                toast.success(
-                  "Connection successful! Your details have been shared."
-                );
-                resetFormAndCloseModal();
-        } else {
-          toast.error("Connection failed. Please try again.");
-        }
-      },
-      onError: (err) => {
-        const message = err?.response?.data?.message || "Failed to connect. Please try again.";
-        toast.error(message);
-      },
-    });
+  // 3. Create Payload
+  const payload = {
+    viewId: profile.viewId,
+    fullName: formData.fullName,
+    email: formData.email,
+    phoneNumber: cleanPhone, // Sending the cleaned number
+    designation: formData.designation,
+    businessName: formData.businessName,
+    businessPhone: cleanBusinessPhone, // Sending the cleaned business number
+    website: formData.website,
+    businessCategory: formData.businessCategory,
+    businessAddress: formData.businessAddress,
+    notes: formData.notes,
   };
+
+  // 4. Send Request
+  connectMutate(payload, {
+    onSuccess: (res) => {
+      if (res?.success) {
+        toast.success("Connection successful! Your details have been shared.");
+        resetFormAndCloseModal();
+      } else {
+        toast.error("Connection failed. Please try again.");
+      }
+    },
+    onError: (err) => {
+      const message =
+        err?.response?.data?.message || "Failed to connect. Please try again.";
+      toast.error(message);
+    },
+  });
+};
 
   if (isLoading) {
     return (
